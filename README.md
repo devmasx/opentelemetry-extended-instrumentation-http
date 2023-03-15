@@ -18,3 +18,8 @@ const instrumentations = getNodeAutoInstrumentations(HttpInstrumentation.withPay
 - http.request.headers
 - http.response.body
 - http.response.headers
+
+
+### TODO
+
+- mask request body property
