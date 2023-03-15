@@ -13,7 +13,7 @@ import { HttpInstrumentationConfig } from '@opentelemetry/instrumentation-http';
 
 export class InstrumentationsConfig {
   static onRequestBody(span: Span, body: any) {
-    span.setAttribute('http.request.body', body.toString());
+    span.setAttributes({ 'http.request.body': body.toString() });
   }
 
   static onRequestHeaders(span: Span, headers: OutgoingHttpHeaders) {
