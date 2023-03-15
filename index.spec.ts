@@ -7,9 +7,10 @@ const span = {
 describe('InstrumentationsConfig', () => {
   it(`#onRequestBody`, () => {
     // @ts-ignore
-    InstrumentationsConfig.onRequestBody(span, {
-      example: 'example',
-    });
-    expect(span.setAttribute.mock.calls).toHaveLength(1);
+    InstrumentationsConfig.onRequestBody(span, '{"example": "example" }');
+    expect(span.setAttribute).toHaveBeenLastCalledWith(
+      'http.request.body',
+      '{"example": "example" }',
+    );
   });
 });
