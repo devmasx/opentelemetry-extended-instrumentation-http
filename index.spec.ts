@@ -1,4 +1,4 @@
-import { HttpInstrumentation } from './index';
+import { HttpInstrumentation, HttpHandler } from './index';
 
 const span = {
   setAttribute: jest.fn(),
@@ -35,6 +35,18 @@ describe('HttpInstrumentation', () => {
     HttpInstrumentation.onResponseHeaders(span, { 'x-header': 'example' });
     expect(span.setAttributes).toHaveBeenLastCalledWith({
       'http.response.headers': '{"x-header":"example"}',
+    });
+  });
+
+  describe.only('HttpInstrumentation', () => {
+    it('mask secrets values', () => {
+      const httpHandler = new HttpHandler(['my-password']);
+
+      // @ts-ignore
+      httpHandler.onRequestBody(span, '{"password": "my-password" }');
+      expect(span.setAttributes).toHaveBeenLastCalledWith({
+        'http.request.body': '{"password": "*****" }',
+      });
     });
   });
 });

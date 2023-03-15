@@ -11,30 +11,43 @@ import {
 import { Span } from '@opentelemetry/api';
 import { HttpInstrumentationConfig } from '@opentelemetry/instrumentation-http';
 
-export class HttpInstrumentation {
-  static onRequestBody(span: Span, body: any) {
-    span.setAttributes({ 'http.request.body': body.toString() });
+export class HttpHandler {
+  constructor(private secretValues: string[]) {}
+
+  maskSecrets(value: string, secretValues: string[] = this.secretValues) {
+    try {
+      const regexp = new RegExp(secretValues.join('|'), 'g');
+      return value.replace(regexp, '*****');
+    } catch {
+      console.warn('Imposible to mask', value);
+    }
   }
 
-  static onRequestHeaders(span: Span, headers: OutgoingHttpHeaders) {
+  onRequestBody(span: Span, body: any) {
     span.setAttributes({
-      ['http.request.headers']: JSON.stringify(headers),
+      'http.request.body': this.maskSecrets(body.toString()),
     });
   }
 
-  static onResponseBody(span: Span, body: any) {
+  onRequestHeaders(span: Span, headers: OutgoingHttpHeaders) {
     span.setAttributes({
-      ['http.response.body']: body,
+      ['http.request.headers']: this.maskSecrets(JSON.stringify(headers)),
     });
   }
 
-  static onResponseHeaders(span: Span, headers: OutgoingHttpHeaders) {
+  onResponseBody(span: Span, body: any) {
     span.setAttributes({
-      ['http.response.headers']: JSON.stringify(headers),
+      ['http.response.body']: this.maskSecrets(body),
     });
   }
 
-  static requestHook(span: Span, request: ClientRequest) {
+  onResponseHeaders(span: Span, headers: OutgoingHttpHeaders) {
+    span.setAttributes({
+      ['http.response.headers']: this.maskSecrets(JSON.stringify(headers)),
+    });
+  }
+
+  requestHook(span: Span, request: ClientRequest) {
     span.updateName(`HTTP ${request.method} - ${request.host}`);
     this.onRequestHeaders(span, request.getHeaders());
     const oldWrite = request.write.bind(request);
@@ -44,7 +57,7 @@ export class HttpInstrumentation {
     };
   }
 
-  static responseHook(
+  responseHook(
     span: Span,
     response: IncomingMessage | ServerResponse<IncomingMessage>,
   ) {
@@ -56,20 +69,24 @@ export class HttpInstrumentation {
       this.onResponseHeaders(span, response.headers);
     });
   }
+}
 
-  static instrumentationConfig(
+export class HttpInstrumentation {
+  static withPayloadDetails(
     config: HttpInstrumentationConfig = {},
-  ): HttpInstrumentationConfig {
+    secretValues?: string[],
+    httpHandler?: HttpHandler,
+  ): {
+    '@opentelemetry/instrumentation-http': HttpInstrumentationConfig;
+  } {
+    const httpInstrumentation = httpHandler || new HttpHandler(secretValues);
     return {
-      responseHook: this.responseHook.bind(this),
-      requestHook: this.requestHook.bind(this),
-      ...config,
-    };
-  }
-
-  static withPayloadDetails() {
-    return {
-      '@opentelemetry/instrumentation-http': this.instrumentationConfig(),
+      '@opentelemetry/instrumentation-http': {
+        responseHook:
+          httpInstrumentation.responseHook.bind(httpInstrumentation),
+        requestHook: httpInstrumentation.requestHook.bind(httpInstrumentation),
+        ...config,
+      },
     };
   }
 }
