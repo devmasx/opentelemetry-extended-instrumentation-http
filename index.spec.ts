@@ -6,9 +6,10 @@ const span = {
 };
 
 describe('HttpInstrumentation', () => {
+  const httpHandler = new HttpHandler();
   it(`#onRequestBody`, () => {
     // @ts-ignore
-    HttpInstrumentation.onRequestBody(span, '{"example": "example" }');
+    httpHandler.onRequestBody(span, '{"example": "example" }');
     expect(span.setAttributes).toHaveBeenLastCalledWith({
       'http.request.body': '{"example": "example" }',
     });
@@ -16,7 +17,7 @@ describe('HttpInstrumentation', () => {
 
   it(`#onResponseBody`, () => {
     // @ts-ignore
-    HttpInstrumentation.onResponseBody(span, '{"example": "example" }');
+    httpHandler.onResponseBody(span, '{"example": "example" }');
     expect(span.setAttributes).toHaveBeenLastCalledWith({
       'http.response.body': '{"example": "example" }',
     });
@@ -24,7 +25,7 @@ describe('HttpInstrumentation', () => {
 
   it(`#onRequestHeaders`, () => {
     // @ts-ignore
-    HttpInstrumentation.onRequestHeaders(span, { 'x-header': 'example' });
+    httpHandler.onRequestHeaders(span, { 'x-header': 'example' });
     expect(span.setAttributes).toHaveBeenLastCalledWith({
       'http.request.headers': '{"x-header":"example"}',
     });
@@ -32,13 +33,13 @@ describe('HttpInstrumentation', () => {
 
   it(`#onResponseHeaders`, () => {
     // @ts-ignore
-    HttpInstrumentation.onResponseHeaders(span, { 'x-header': 'example' });
+    httpHandler.onResponseHeaders(span, { 'x-header': 'example' });
     expect(span.setAttributes).toHaveBeenLastCalledWith({
       'http.response.headers': '{"x-header":"example"}',
     });
   });
 
-  describe.only('HttpInstrumentation', () => {
+  describe('HttpInstrumentation', () => {
     it('mask secrets values', () => {
       const httpHandler = new HttpHandler(['my-password']);
 

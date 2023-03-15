@@ -12,9 +12,12 @@ import { Span } from '@opentelemetry/api';
 import { HttpInstrumentationConfig } from '@opentelemetry/instrumentation-http';
 
 export class HttpHandler {
-  constructor(private secretValues: string[]) {}
+  constructor(private secretValues?: string[]) {}
 
   maskSecrets(value: string, secretValues: string[] = this.secretValues) {
+    if (!secretValues) {
+      return value;
+    }
     try {
       const regexp = new RegExp(secretValues.join('|'), 'g');
       return value.replace(regexp, '*****');
