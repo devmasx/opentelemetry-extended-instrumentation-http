@@ -11,7 +11,7 @@ import {
 import { Span } from '@opentelemetry/api';
 import { HttpInstrumentationConfig } from '@opentelemetry/instrumentation-http';
 
-export class WithPayloadDetails {
+export class HttpInstrumentation {
   static onRequestBody(span: Span, body: any) {
     span.setAttributes({ 'http.request.body': body.toString() });
   }
