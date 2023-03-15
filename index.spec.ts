@@ -1,8 +1,15 @@
 import { InstrumentationsConfig } from './index';
 
-describe('myFunction', () => {
-  it(`myFunction`, async () => {
-    const result = InstrumentationsConfig;
-    expect(result).toEqual(true);
+const span = {
+  setAttribute: jest.fn(),
+};
+
+describe('InstrumentationsConfig', () => {
+  it(`#onRequestBody`, () => {
+    // @ts-ignore
+    InstrumentationsConfig.onRequestBody(span, {
+      example: 'example',
+    });
+    expect(span.setAttribute.mock.calls).toHaveLength(1);
   });
 });
