@@ -1,4 +1,4 @@
-## package-example
+# Opentelemetry extended instrumentation HTTP
 
 ## Usage
 ```
